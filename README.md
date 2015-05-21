@@ -1,5 +1,5 @@
 # Collections
-Laravel5 offers a great way to manipulate arrays through the Illuminate\Support\Collection class and its enormous variety of methods. We can chain those methods and apply many changes with very little code which is great. Let's see a fast example:
+Laravel5 offers a great way to manipulate arrays through the `Illuminate\Support\Collection` class and its enormous variety of methods. We can chain those methods and apply many changes with very little code which is great. Let's see a fast example:
 
 	$collection = collect([
 		['id' => 1, 'name' => 'John Doe', 'sex' => 'male'],
@@ -14,7 +14,7 @@ Laravel5 offers a great way to manipulate arrays through the Illuminate\Support\
 		['id' => 1, 'name' => 'John Doe', 'sex' => 'male']
 	];
 	
-Wow, what a flexibility? We managed to filter a collection in order to keep only the male users, we ordered this new collection by name in ascending order and then we forced a reset for the items keys. Imagine i didn't use foreach() at all. How cool is that?
+Wow, what a flexibility? We managed to filter a collection in order to keep only the male users, we ordered this new collection by name in ascending order and then we forced a reset for the items keys. Imagine i didn't use `foreach()` at all. How cool is that?
 
 Most of the times a new collection is created but there are cases we have to be careful because the changes are applied to the collection itself. Eloquent models collections are returned as Collection instances so it is easy to understand how important is to master this utility. Furthermore apart from the Eloquent collections we can use the Collection class to many other cases and provide nice, clean and testable code.
 
@@ -46,7 +46,39 @@ Get all of the items in the collection.
 	
 **Notes:**
 
-Be careful when you use all() then the result is not a collection anymore so you cannot chain another method to it.
+Be careful when you use `all()` then the result is not a collection anymore so you cannot chain another method to it so do this before it.
+
+## chunk()
+
+Chunk the underlying collection array.
+
+**Method:**
+
+	public function chunk($size, $preserveKeys = false);
+	
+**Example 1:**
+
+	$collection1 = collect([1,2,3,4,5]);
+
+	$collection2 = $collection1->chunk(2);
+	
+**Result:**
+	
+	$collection2->all() = [collect([1,2]), collect([3,4]), collect([5])];
+	
+**Example 2:**
+
+	$collection1 = collect([1,2,3,4,5]);
+
+	$collection2 = $collection1->chunk(2, true);
+	
+**Result:**
+	
+	$collection2->all() = [collect([1,2]), collect([2 => 3, 3 => 4]), collect([4 => 5])];
+	
+**Notes:**
+
+This method helps us to split a collection of items into small chunks. This is very useful when we handle extremely big collections of data or even when we want to present a collection in a responsive template and we use a CSS Framework like Bootstrap or Foundation. The second parameter forces by default the keys inside the arrays chunks to be regenerated from the start. If it is set to true then the old keys are used.
 	
 ## collapse()
 
@@ -119,6 +151,38 @@ Check if a collection contains an item.
 **Result:**
 
 	false
+
+## count()
+
+Count the number of items in the collection.
+
+**Method:**
+
+	public function count();
+	
+**Example 1:**
+
+	$collection = collect([1,2,3,4,5]);
+	
+	$count = $collection->count();
+	
+**Result:**
+
+	$count = 5;
+	
+**Example 2:**
+
+	$collection = collect([
+		['id' => 1, 'name' => 'John Doe'],
+		['id' => 2, 'name' => 'Jane Doe'],
+		['id' => 3, 'name' => 'Jack Doe']
+	]);
+	
+	$count = $collection->count();
+	
+**Result:**
+
+	$count = 3;
 	
 ## diff()
 
@@ -199,11 +263,11 @@ Fetch a nested element of the collection.
 		['id' => 2, 'name' => 'Jane Doe']
 	]);
 
-	$collection2 = $collection->fetch('id');
+	$collection2 = $collection1->fetch('id');
 	
 **Result:**
 
-	$collection2->all() = [1, 3]
+	$collection2->all() = [1, 2]
 	
 **Example 2:**
 
@@ -216,7 +280,7 @@ Fetch a nested element of the collection.
 	
 **Result:**
 
-	$collection2->all() = ['John Doe', 'Jane Doe']
+	$collection2->all() = ['John Doe', 'Jane Doe'];
 	
 **Notes:**
 
@@ -244,7 +308,7 @@ Run a filter over each of the items.
 **Result:**
 
 	$collection2->all() = [
-		1 => ['id' => 1, 'name' => 'John Doe']
+		1 => ['id' => 2, 'name' => 'Jane Doe', 'sex' => 2]
 	]);
 	
 **Example 2:**
@@ -276,119 +340,7 @@ Run a filter over each of the items.
 	
 **Notes:**
 
-This is the big difference with `each`. Here we can assign the result to a new collection since the filtered results are returned. Be careful because the values of the returned collection retain their keys which in most cases is not what we want. For those cases we chain values() method at the end of our filter iterator so the keys are reproduced as we did on our second example.
-
-## where()
-
-Filter items by the given key value pair.
-
-**Method:**
-
-	public function where($key, $value, $strict = true);
-	
-**Example 1:**
-
-	$collection1 = collect([
-		['id' => 1, 'name' => 'John Doe'],
-		['id' => 2, 'name' => 'Jane Doe']
-	]);
-
-	$collection2 = $collection1->where('id', 1);
-	
-**Result:**
-	
-	$collection2->all() = [
-		['id' => 1, 'name' => 'John Doe']
-	];
-	
-**Example 2:**
-
-	$collection1 = collect([
-		['id' => 1, 'name' => 'John Doe'],
-		['id' => 2, 'name' => 'Jane Doe']
-	]);
-
-	$collection2 = $collection1->where('id', '1', true);
-	
-**Result:**
-	
-	$collection2->all() = [];
-	
-**Example 3:**
-
-	$collection1 = collect([
-		['id' => 1, 'name' => 'John Doe'],
-		['id' => 2, 'name' => 'Jane Doe']
-	]);
-
-	$collection2 = $collection->where('id', '2', false);
-	
-**Result:**
-	
-	$collection2->all() = [
-		1 => ['id' => 2, 'name' => 'Jane Doe']
-	];
-	
-**Example 4:**
-
-	$collection1 = collect([
-		['id' => 1, 'name' => 'John Doe'],
-		['id' => 2, 'name' => 'Jane Doe']
-	]);
-
-	$collection2 = $collection->where('id', '2', false)->values();
-	
-**Result:**
-	
-	$collection2->all() = [
-		['id' => 2, 'name' => 'Jane Doe']
-	];
-	
-**Notes:**
-
-Be careful, there is a third parameter named `strict` which is equal to true so by default the method tries to find for identical values and not just equal. If this changes then the method tries to find equal values. Also if you don't want the values of your new collection to retian their keys form their previous collection remember to chain values() method at the end of where() as we did on our fourth example.
-
-## whereLoose()
-
-Filter items by the given key value pair using loose comparison.
-
-**Method:**
-
-	public function whereLoose($key, $value);
-	
-**Example 1:**
-
-	$collection1 = collect([
-		['id' => 1, 'name' => 'John Doe'],
-		['id' => 2, 'name' => 'Jane Doe']
-	]);
-
-	$collection2 = $collection1->whereLoose('id', 1);
-	
-**Result:**
-	
-	$collection2->all() = [
-		['id' => 1, 'name' => 'John Doe']
-	];
-	
-**Example 2:**
-
-	$collection1 = collect([
-		['id' => 1, 'name' => 'John Doe'],
-		['id' => 2, 'name' => 'Jane Doe']
-	]);
-
-	$collection2 = $collection1->whereLoose('id', '1');
-	
-**Result:**
-	
-	$collection2->all() = [
-		['id' => 1, 'name' => 'John Doe']
-	];
-	
-**Notes:**
-
-It is exactly the same method as before but in this case it doesn't accept a third parameter and returns results by searching only for equal values.
+This is the big difference with `each`. Here we can assign the result to a new collection since the filtered results are returned. Be careful because the values of the returned collection retain their keys which in most cases is not what we want. For those cases we chain `values()` method at the end of our filter iterator so the keys are reproduced as we did on our second example.
 
 ## first()
 
@@ -409,7 +361,7 @@ Get the first item from the collection.
 	
 **Result:**
 
-	$item = ['id' => 1, 'name' => 'John Doe']
+	$item = ['id' => 1, 'name' => 'John Doe'];
 	
 **Example 2:**
 
@@ -424,7 +376,7 @@ Get the first item from the collection.
 	
 **Result:**
 
-	$item = ['id' => 2, 'name' => 'Jane Doe']
+	$item = ['id' => 2, 'name' => 'Jane Doe'];
 	
 **Example 3:**
 
@@ -439,11 +391,11 @@ Get the first item from the collection.
 	
 **Result:**
 
-	$item = [1,2,3]
+	$item = [1,2,3];
 	
 **Notes:**
 
-If no parameter is passed the very first item is returned. You can also pass a callback function with some login to filter first your items. Of course if no match is found then the default parameter is returned. Be careful with the order of the $key and the $value parameters inside the callback function.
+If no parameter is passed the very first item is returned. You can also pass a callback function with some login to filter first your items. Of course if no match is found then the default parameter is returned. Be careful with the order of the `$key` and the `$value` parameters inside the callback function.
 
 ## flatten()
 
@@ -476,13 +428,13 @@ Flip the items in the collection.
 	
 **Example:**
 
-	$collection = collect(['id' => 1, 'name' => 'John Doe']);
+	$collection1 = collect(['id' => 1, 'name' => 'John Doe']);
 
-	$collection1 = $collection->flip();
+	$collection2 = $collection1->flip();
 	
 **Result:**
 	
-	$collection1->all() = ['1' => 'id', 'John Doe' => 'name'];
+	$collection2->all() = ['1' => 'id', 'John Doe' => 'name'];
 	
 **Notes:**
 
@@ -508,16 +460,44 @@ Remove an item from the collection by key.
 **Result:**
 	
 	$collection->all() = [
-		1 => ['id' => 1, 'name' => 'John Doe']
+		1 => ['id' => 2, 'name' => 'Jane Doe']
 	];
 	
 	$collection->values()->all() = [
-		['id' => 1, 'name' => 'John Doe']
+		['id' => 2, 'name' => 'Jane Doe']
 	];
 	
 **Notes:**
 
-Method forget() affects the collection itself without returning anything. So after we apply it we simply use the affected collection. Remember that values() updates the collection's keys.
+Method `forget()` affects the collection itself without returning anything. So after we apply it we simply use the affected collection. Remember that `values()` updates the collection's keys.
+
+## forPage()
+
+"Paginate" the collection by slicing it into a smaller collection.
+
+**Method:**
+
+	public function forPage($page, $perPage);
+	
+**Example:**
+
+	$collection1 = collect([
+		['id' => 1, 'name' => 'John Doe'],
+		['id' => 2, 'name' => 'Jane Doe'],
+		['id' => 3, 'name' => 'John Doe']
+	]);
+
+	$collection2 = $collection1->forPage(2,2);
+	
+**Result:**
+
+	$collection2->all() = [
+		['id' => 3, 'name' => 'John Doe']
+	];
+	
+**Notes:**
+
+The first parameter inicates the page we need and the second one the number of items per page.
 
 ## get()
 
@@ -538,9 +518,7 @@ Get an item from a collection by key.
 	
 **Result:**
 	
-	$collection2 = [
-		['id' => 1, 'name' => 'John Doe']
-	];
+	$collection2 = ['id' => 1, 'name' => 'John Doe'];
 	
 **Example 2:**
 
@@ -553,7 +531,7 @@ Get an item from a collection by key.
 	
 **Result:**
 	
-	null
+	$collection2 = null;
 	
 **Example 3:**
 
@@ -570,7 +548,7 @@ Get an item from a collection by key.
 	
 **Notes:**
 
-In case the key we want doesn't exist the get() method returns the value of the second parameter as a fallback.
+In case the key we want doesn't exist the `get()` method returns the value of the second parameter as a fallback.
 
 ## groupBy()
 
@@ -630,6 +608,215 @@ Group an associative array by a field or using a callback.
 
 The parameter can be either a string like our first example either a callback function like our second example.
 
+## has()
+
+Determine if an item exists in the collection by key.
+
+**Method:**
+
+	public function has($key);
+	
+**Example 1:**
+
+	$collection = collect([
+		['id' => 1, 'name' => 'John Doe'],
+		['id' => 2, 'name' => 'Jane Doe'],
+		['id' => 3, 'name' => 'John Doe']
+	]);
+
+	$result = $collection->has(0);
+	
+**Result:**
+	
+	$result = true;
+	
+**Example 2:**
+
+	$collection = collect([
+		['id' => 1, 'name' => 'John Doe'],
+		['id' => 2, 'name' => 'Jane Doe'],
+		['id' => 3, 'name' => 'John Doe']
+	]);
+
+	$result = $collection->has(10);
+	
+**Result:**
+
+	$result = false;
+	
+## implode()
+
+Concatenate values of a given key as a string.
+
+**Method:**
+
+	public function implode($value, $glue = null);
+	
+**Example 1:**
+
+	$collection = collect([
+		['id' => 1, 'name' => 'John Doe'],
+		['id' => 2, 'name' => 'Jane Doe'],
+		['id' => 3, 'name' => 'John Doe']
+	]);
+
+	$result = $collection->implode('id');
+	
+**Result:**
+	
+	$result = '123';
+	
+**Example 2:**
+
+	$collection = collect([
+		['id' => 1, 'name' => 'John Doe'],
+		['id' => 2, 'name' => 'Jane Doe'],
+		['id' => 3, 'name' => 'John Doe']
+	]);
+
+	$result = $collection->implode('id', ',');
+	
+**Result:**
+	
+	$result = '1,2,3';
+	
+**Example 3:**
+
+	$collection = collect([
+		['id' => 1, 'name' => 'John Doe'],
+		['id' => 2, 'name' => 'Jane Doe'],
+		['id' => 3, 'name' => 'John Doe']
+	]);
+
+	$result = $collection->implode('name', ', ');
+	
+**Result:**
+	
+	$result = 'John Doe, Jane Doe, John Doe';
+	
+## intersect()
+
+Intersect the collection with the given items. It returns a collection with common values.
+
+**Method:**
+
+	public function intersect($items);
+	
+**Example 1:**
+
+	$collection1 = collect([1,2,3,4,5]);
+	
+	$collection2 = collect([1,4,5,6]);
+
+	$collection3 = $collection1->intersect($collection2);
+	
+**Result:**
+	
+	$collection3->all() = [0 => 1, 3 => 4, 4 => 5];
+	
+**Example 2:**
+
+	$collection1 = collect([1,2,3,4,5]);
+
+	$collection2 = $collection1->intersect([1,4]);
+	
+**Result:**
+	
+	$collection2->all() = [0 => 1, 3 => 4];
+	
+**Example 3:**
+
+	$collection1 = collect([1,2,3,4,5]);
+
+	$collection2 = $collection1->intersect([1,4])->values();
+	
+**Result:**
+	
+	$collection2->all() = [0 => 1, 1 => 4];
+	
+**Notes:**
+
+We can pass another collection or an array of values and then check for common values. The items of the returned collection retain their old keys so we can chain the `values()` method after the `intersect()` to refresh the items keys as we did on Example 3.
+	
+## isEmpty()
+
+Determine if a collection is empty or not.
+
+**Method:**
+
+	public function isEmpty();
+	
+**Example 1:**
+
+	$collection = collect([
+		['id' => 1, 'name' => 'John Doe'],
+		['id' => 2, 'name' => 'Jane Doe'],
+		['id' => 3, 'name' => 'John Doe']
+	]);
+
+	$result = $collection->isEmpty();
+	
+**Result:**
+	
+	$result = false;
+	
+**Example 2:**
+
+	$collection = collect();
+
+	$result = $collection->isEmpty();
+	
+**Result:**
+	
+	$result = true;
+	
+## jsonSerialize()
+
+Convert the object into something JSON serializable.
+
+**Method:**
+
+	public function jsonSerialize();
+	
+**Example:**
+
+	$collection = collect([1,2,3,4,5]);
+	
+	$array = $collection->jsonSerialize();
+	
+**Result:**
+	
+	$array = [1,2,3,4,5];
+	
+## keys()
+
+Get the keys of the collection items.
+
+**Method:**
+
+	public function keys();
+	
+**Example 1:**
+
+	$collection1 = collect([1,2,3]);
+
+	$collection2 = $collection1->keys();
+	
+**Result:**
+
+	$collection2->all() = [0,1,2];
+	
+**Example 2:**
+
+	$collection1 = collect(['id' => 1, 'name' => 'John Doe']);
+
+	$collection2 = $collection1->keys();
+	
+**Result:**
+
+	$collection2->all() = ['id', 'name'];
+	
+	
 ## keyBy()
 
 Key an associative array by a field or using a callback.
@@ -651,12 +838,8 @@ Key an associative array by a field or using a callback.
 **Result:**
 	
 	$collection2->all() = [
-		'John Doe' => [
-			['id' => 3, 'name' => 'John Doe']
-		],
-		'Jane Doe' => [
-			['id' => 2, 'name' => 'Jane Doe']
-		]
+		'John Doe' => ['id' => 3, 'name' => 'John Doe'],
+		'Jane Doe' => ['id' => 2, 'name' => 'Jane Doe']
 	];
 	
 **Example 2:**
@@ -674,206 +857,13 @@ Key an associative array by a field or using a callback.
 **Result:**
 
 	$collection2->all() = [
-		[
-			['id' => 2, 'name' => 'Jane Doe']
-		],
-		[
-			['id' => 3, 'name' => 'John Doe']
-		]
+		['id' => 2, 'name' => 'Jane Doe'],
+		['id' => 3, 'name' => 'John Doe']
 	];
 	
 **Notes:**
 
 The parameter can be either a string like our first example either a callback function like our second example. The difference with `groupBy()` method is that here new results override previous ones if they share the same key.
-
-## has()
-
-Determine if an item exists in the collection by key.
-
-**Method:**
-
-	public function has($key);
-	
-**Example 1:**
-
-	$collection = collect([
-		['id' => 1, 'name' => 'John Doe'],
-		['id' => 2, 'name' => 'Jane Doe'],
-		['id' => 3, 'name' => 'John Doe']
-	]);
-
-	$collection->has(0);
-	
-**Result:**
-	
-	true
-	
-**Example 2:**
-
-	$collection = collect([
-		['id' => 1, 'name' => 'John Doe'],
-		['id' => 2, 'name' => 'Jane Doe'],
-		['id' => 3, 'name' => 'John Doe']
-	]);
-
-	$collection->has(10);
-	
-**Result:**
-
-	false
-	
-## implode()
-
-Concatenate values of a given key as a string.
-
-**Method:**
-
-	public function implode($value, $glue = null);
-	
-**Example 1:**
-
-	$collection = collect([
-		['id' => 1, 'name' => 'John Doe'],
-		['id' => 2, 'name' => 'Jane Doe'],
-		['id' => 3, 'name' => 'John Doe']
-	]);
-
-	$collection->implode('id');
-	
-**Result:**
-	
-	'123'
-	
-**Example 2:**
-
-	$collection = collect([
-		['id' => 1, 'name' => 'John Doe'],
-		['id' => 2, 'name' => 'Jane Doe'],
-		['id' => 3, 'name' => 'John Doe']
-	]);
-
-	$collection->implode('id', ',');
-	
-**Result:**
-	
-	'1,2,3'
-	
-**Example 3:**
-
-	$collection = collect([
-		['id' => 1, 'name' => 'John Doe'],
-		['id' => 2, 'name' => 'Jane Doe'],
-		['id' => 3, 'name' => 'John Doe']
-	]);
-
-	$collection->implode('name', ', ');
-	
-**Result:**
-	
-	'John Doe, Jane Doe, John Doe'
-	
-## intersect()
-
-Intersect the collection with the given items. It reurns a collection with common values.
-
-**Method:**
-
-	public function intersect($items);
-	
-**Example 1:**
-
-	$collection1 = collect([1,2,3,4,5]);
-	$collection2 = collect([1,4,5,6]);
-
-	$collection3 = $collection1->intersect($collection2);
-	
-**Result:**
-	
-	$collection3->all() = [0 => 1, 3 => 4, 4 => 5];
-	
-**Example 2:**
-
-	$collection1 = collect([1,2,3,4,5]);
-
-	$collection2 = $collection1->intersect([1,4]);
-	
-**Result:**
-	
-	$collection3->all() = [0 => 1, 3 => 4];
-	
-**Example 3:**
-
-	$collection1 = collect([1,2,3,4,5]);
-
-	$collection2 = $collection1->intersect([1,4])->values();
-	
-**Result:**
-	
-	$collection3->all() = [0 => 1, 1 => 4];
-	
-**Notes:**
-
-We can pass another collection or an array of values and then check for common values. The items of the returned collection retain their old keys so we can chain the values() method after the intersect() to refresh the items keys as we did on Example 3.
-	
-## isEmpty()
-
-Determine if a collection is empty or not.
-
-**Method:**
-
-	public function isEmpty();
-	
-**Example 1:**
-
-	$collection1 = collect([
-		['id' => 1, 'name' => 'John Doe'],
-		['id' => 2, 'name' => 'Jane Doe'],
-		['id' => 3, 'name' => 'John Doe']
-	]);
-
-	$collection1->isEmpty();
-	
-**Result:**
-	
-	false
-	
-**Example 2:**
-
-	$collection2 = collect();
-
-	$collection2->isEmpty();
-	
-**Result:**
-	
-	true
-	
-## keys()
-
-Get the keys of the collection items.
-
-**Method:**
-
-	public function keys();
-	
-**Example 1:**
-
-	$collection1 = collect([1,2,3]);
-
-	$collection2 = $collection1->keys();
-	
-**Result:**
-
-	$collection2->all() = [0,1,2];
-	
-**Example 1:**
-
-	$collection1 = collect(['id' => 1, 'name' => 'John Doe']);
-
-	$collection2 = $collection1->keys();
-	
-**Result:**
-
-	$collection2->all() = ['id', 'name'];
 	
 ## last()
 
@@ -949,7 +939,7 @@ Get an array with the values of a given key.
 	
 **Notes:**
 
-If we don't pass the second parameter, an arrray is created with values the values of a selected items key. If we pass another key as second parameter then we get pairs with that key values as keys for our array. This method is extremely useful to create array and pass it to a select dropdown menu (maybe with Form::select() method if you use the illuminate HTML component).
+If we don't pass the second parameter, an arrray is created with values the values of a selected items key. If we pass another key as second parameter then we get pairs with that key values as keys for our array. This method is extremely useful to create array and pass it to a select dropdown menu (maybe with `Form::select()` method if you use the illuminate HTML component).
 
 ## make()
 
@@ -965,6 +955,8 @@ Create a new collection instance if the value isn't one already.
 	$woman = ['id' => 2, 'name' => 'Jane Doe'];
 
 **Use method `make()`:**
+
+	use Illuminate\Support\Collection;
   
 	$collection = Collection::make([$man, $woman]);
 
@@ -974,7 +966,7 @@ Create a new collection instance if the value isn't one already.
 	
 **Result:**
 	
-	$collection = [
+	$collection->all() = [
 		['id' => 1, 'name' => 'John Doe'],
 		['id' => 2, 'name' => 'Jane Doe']
 	];
@@ -985,7 +977,7 @@ Create a new collection instance if the value isn't one already.
 	
 **Result:**
 
-	$collection = [];
+	$collection->all() = [];
 
 ## map()
 
@@ -1029,7 +1021,7 @@ Run a map over each of the items and returns a new collection.
 	
 **Notes:**
 
-There is a great difference between each() and map() function. You cannot assign each() method results to a new collection as it doesn't return anything, it just helps you iterate through a collection. On the other hand map() method helps you create a new collection faster by assigning its results to a new one. For each() method if you want to create a new collection you have to pass the new collection inside the iterator with use() like we did when we explained it before.
+There is a great difference between `each()` and `map()` function. You cannot assign `each()` method results to a new collection as it doesn't return anything, it just helps you iterate through a collection. On the other hand `map()` method helps you create a new collection faster by assigning its results to a new one. For `each()` method if you want to create a new collection you have to pass the new collection inside the iterator with `use()` like we did when we explained it before.
 
 ## merge()
 
@@ -1072,35 +1064,139 @@ Merge the collection with the given items or with another collection.
 	
 **Notes:**
 
-With merge() we can merge two collections or a collection with an array of values. The result is a new collection which has appended the new values. Be careful for key overrides if you use pairs with strings as keys.
+With `merge()` we can merge two collections or a collection with an array of values. The result is a new collection which has appended the new values. Be careful for key overrides if you use pairs with strings as keys.
 
-## forPage()
+## offsetExists()
 
-"Paginate" the collection by slicing it into a smaller collection.
+Determine if an item exists at an offset.
 
 **Method:**
 
-	public function forPage($page, $perPage);
+	public function offsetExists($key);
 	
 **Example 1:**
 
-	$collection1 = collect([
-		['id' => 1, 'name' => 'John Doe'],
-		['id' => 2, 'name' => 'Jane Doe'],
-		['id' => 3, 'name' => 'John Doe']
-	]);
-
-	$collection2 = $collection1->forPage(2,2);
+	$collection = collect([1,2,3,4,5]);
+	
+	$result = $collection->offsetExists(1);
 	
 **Result:**
 
-	$collection2->all() = [
-		['id' => 3, 'name' => 'John Doe']
-	];
+	$result = true;
+	
+**Example 2:**
+
+	$collection = collect([
+		['id' => 1, 'name' => 'John Doe'],
+		['id' => 2, 'name' => 'Jane Doe'],
+		['id' => 3, 'name' => 'Jack Doe']
+	]);
+	
+	$result = $collection->offsetExists(5);
+	
+**Result:**
+
+	$result = false;
+	
+## offsetGet()
+
+Get an item at a given offset.
+
+**Method:**
+
+	public function offsetGet($key);
+	
+**Example 1:**
+
+	$collection = collect([1,2,3,4,5]);
+	
+	$item = $collection->offsetGet(0);
+	
+**Result:**
+
+	$item = 1;
+	
+**Example 2:**
+
+	$collection = collect([
+		['id' => 1, 'name' => 'John Doe'],
+		['id' => 2, 'name' => 'Jane Doe'],
+		['id' => 3, 'name' => 'Jack Doe']
+	]);
+	
+	$item = $collection->offsetGet(2);
+	
+**Result:**
+
+	$item = ['id' => 3, 'name' => 'Jack Doe'];
 	
 **Notes:**
 
-The first parameter inicates the page we need and the second one the number of items per page.
+If we pass a non-existent key then an ErrorException is thrown.
+
+## offsetSet()
+
+Set the item at a given offset.
+
+**Method:**
+
+	public function offsetSet($key, $value);
+	
+**Example 1:**
+
+	$collection = collect([1,2,3,4,5]);
+	
+	$collection->offsetSet(2, 123);
+	
+**Result:**
+
+	$collection->all() = [1,2,123,4,5];
+	
+**Example 2:**
+
+	$collection = collect([1,2,3,4,5]);
+	
+	$collection->offsetSet(5, 123);
+	
+**Result:**
+
+	$collection->all() = [1,2,3,4,5,123];
+	
+**Notes:**
+
+This method updates the collection itself by replacing a value if the key exists or by adding a new key/value pair if the key doesn't exist.
+
+## offsetUnset()
+
+Unset the item at a given offset.
+
+**Method:**
+
+	public function offsetUnset($key);
+	
+**Example 1:**
+
+	$collection = collect([1,2,3,4,5]);
+	
+	$collection->offsetUnset(2);
+	
+**Result:**
+
+	$collection->all() = [0 => 1, 1 => 2, 3 => 4, 4 => 5];
+	
+**Example 2:**
+
+	$collection = collect([1,2,3,4,5]);
+	
+	$collection->offsetUnset(22);
+	
+**Result:**
+
+	$collection->all() = [1,2,3,4,5];
+	
+**Notes:**
+
+This method updates the collection itself by unseting a key if this key exists. If it doesn't then nothing happens.
 
 ## pop()
 
@@ -1168,7 +1264,7 @@ Push an item onto the end of the collection.
 	
 **Notes:**
 
-This method doesn't return anything, just pushes a given item to the end of our collection. It is exactly the opposite of the prepend() method.
+This method doesn't return anything, just pushes a given item to the end of our collection. It is exactly the opposite of the `prepend()` method.
 
 ## pull()
 
@@ -1186,7 +1282,7 @@ Pulls an item from the collection.
 	
 **Result:**
 
-	$collection->all() = [1,3,4,5];
+	$collection->all() = [0 => 1, 2 => 3, 3 => 4, 4 => 5];
 	
 	$item = 2;
 	
@@ -1194,7 +1290,7 @@ Pulls an item from the collection.
 
 	$collection = collect([1,2,3,4,5]);
 
-	$item = $collection->pull(11);
+	$item = $collection->pull(11, [1,2,3]);
 	
 **Result:**
 
@@ -1204,7 +1300,7 @@ Pulls an item from the collection.
 	
 **Notes:**
 
-This method returns the value of the item we 've just pulled and removes it also from the collection. If the key we want doesn't exist a fallback value is returned and the collection stays as it is.
+This method returns the value of the item we 've just pulled and removes it also from the collection without updating the keys. If the key we want doesn't exist a fallback value is returned and the collection stays as it is.
 
 ## put()
 
@@ -1256,7 +1352,7 @@ Get one or more items randomly from the collection.
 
 	$item = 4;
 	
-**Example 1:**
+**Example 2:**
 
 	$collection1 = collect([1,2,3,4,5]);
 
@@ -1324,23 +1420,35 @@ Create a collection of all elements that do not pass a given truth test.
 	
 **Result:**
 
-	$collection2->all() = [3 => 4, 4 => 5];
+	$collection2->all() = [1,2,3];
 	
 **Example 2:**
 
 	$collection1 = collect([1,2,3,4,5]);
 
 	$collection2 = $collection1->reject(function($item) {
-		return $item > 3;
+		return $item < 4;
+	});
+	
+**Result:**
+
+	$collection2->all() = [3 => 4, 4 => 5];
+	
+**Example 3:**
+
+	$collection1 = collect([1,2,3,4,5]);
+
+	$collection2 = $collection1->reject(function($item) {
+		return $item < 4;
 	})->values();
 	
 **Result:**
 
-	$collection2->all() = [4, 5];
+	$collection2->all() = [4,5];
 	
 **Notes:**
 
-We use a callback function so we can filter our collection's items. The result is a collection with the items which fali to pass the test. Those items retain their keys so we can use the values() method to repopulate those.
+We use a callback function so we can filter our collection's items. The result is a collection with the items which fali to pass the test. Those items retain their keys so we can use the `values()` method to repopulate those.
 
 ## reverse()
 
@@ -1386,11 +1494,11 @@ Search the collection for a given value and return the corresponding key if succ
 
 	$collection = collect(['id' => 1, 'name' => 'John Doe', 'sex' => 1]);
 
-	$collection->search(1);
+	$result = $collection->search(1);
 	
 **Result:**
 
-	'id'
+	$result = 'id';
 	
 **Example 2:**
 
@@ -1400,17 +1508,17 @@ Search the collection for a given value and return the corresponding key if succ
 	
 **Result:**
 
-	false
+	$result = false;
 	
 **Example 3:**
 
 	$collection = collect(['id' => 1, 'name' => 'John Doe', 'sex' => 1]);
 
-	$collection->search('1');
+	$result = $collection->search('1');
 	
 **Result:**
 
-	'id'
+	$result = 'id';
 	
 **Notes:**
 
@@ -1476,7 +1584,7 @@ The collection's items are placed in a random order.
 
 ## slice()
 
-Shuffle the items in the collection.
+Slice the underlying collection array.
 
 **Method:**
 
@@ -1515,38 +1623,6 @@ Shuffle the items in the collection.
 **Notes:**
 
 This method helps us to create a sub-collection or even paginated results. Be careful because the third parameter helps us by resetting automatically new collections items keys. If it set to true though then the old keys are retained by the new collection's items.
-
-## chunk()
-
-Chunk the underlying collection array.
-
-**Method:**
-
-	public function chunk($size, $preserveKeys = false);
-	
-**Example 1:**
-
-	$collection1 = collect([1,2,3,4,5]);
-
-	$collection2 = $collection1->chunk(2);
-	
-**Result:**
-	
-	$collection2->all() = [[1,2], [3,4], [5]];
-	
-**Example 2:**
-
-	$collection1 = collect([1,2,3,4,5]);
-
-	$collection2 = $collection1->chunk(2, true);
-	
-**Result:**
-	
-	$collection2->all() = [[1,2], [2 => 3, 3 => 4], [4 => 5]];
-	
-**Notes:**
-
-This method helps us to split a collection of items into small chunks. This is very useful when we handle extremely big collections of data or even when we want to present a collection in a responsive template and we use a CSS Framework like Bootstrap or Foundation. The second parameter forces by default the keys inside the arrays chunks to be regenerated from the start. If is set to true then the old keys are used.
 
 ## sort()
 
@@ -1594,7 +1670,7 @@ Sort through each item with a callback.
 	
 **Notes:**
 
-This method uses uasort() so it needs a callback function to be used in order to sort the collection accordingly. If we don't use the values() function then the old keys are retained so i suppose we better use it.
+This method uses `uasort()` so it needs a callback function to be used in order to sort the collection accordingly. If we don't use the `values()` function then the old keys are retained so i suppose we better use it.
 
 ## sortBy()
 
@@ -1688,7 +1764,7 @@ Sort the collection using the given callback.
 
 	$collection2 = $collection1->sortBy(function($item){
 		return $item['name'];
-	}), SORT_REGULAR, true)->values();
+	}, SORT_REGULAR, true)->values();
 	
 **Result:**
 	
@@ -1700,7 +1776,7 @@ Sort the collection using the given callback.
 	
 **Notes:**
 
-This method is useful for sorting a collection based on a callback function (examples 3,5) or a specific key (examples 1,2,4) in any order type. If you want updated keys for the returned collection you should use values() method. The sortBy() by default orders the collection items in ascending order but this can change if the third parameter is set to true. The second parameter is a sorting order flag and by default is used to compare the items normally.
+This method is useful for sorting a collection based on a callback function (examples 3,5) or a specific key (examples 1,2,4) in any order type. If you want updated keys for the returned collection you should use `values()` method. The `sortBy()` by default orders the collection items in ascending order but this can change if the third parameter is set to true. The second parameter is a sorting order flag and by default is used to compare the items normally.
 
 More sorting type flags from [php documentation](http://php.net/manual/en/array.constants.php):
 
@@ -1747,7 +1823,7 @@ Sort the collection in descending order using the given callback.
 
 	$collection2 = $collection1->sortByDesc(function($item) {
 		return $item['name'];
-	}), SORT_REGULAR)->values();
+	}, SORT_REGULAR)->values();
 	
 **Result:**
 	
@@ -1759,7 +1835,7 @@ Sort the collection in descending order using the given callback.
 	
 **Notes:**
 
-This method is based on sortBy() method by forcing its third parameter to true so only descending order sorting is returned. Same as before we can sort a collection by using a specific key or a callback. The values() method is needed so that the returned collections always reset their keys to consecutive integers. The second parameter is a sorting order flag and by default is used to compare the items normally. More about sorting flags you can check above on sortBy() method.
+This method is based on `sortBy()` method by forcing its third parameter to true so only descending order sorting is returned. Same as before we can sort a collection by using a specific key or a callback. The `values()` method is needed so that the returned collections always reset their keys to consecutive integers. The second parameter is a sorting order flag and by default is used to compare the items normally. More about sorting flags you can check above on `sortBy()` method.
 
 ## splice()
 
@@ -1903,6 +1979,61 @@ Take a number of items form the top or the bottom of a collection.
 
 This method can take an integer as a parameter that can be positive or negative. If it is positive then the items we take are from the collection's top and if not form the collection's bottom.
 
+## toArray()
+
+Get the collection of items as a plain array.
+
+**Method:**
+
+	public function toArray();
+	
+**Example:**
+
+	$collection = collect([1,2,3,4,5]);
+	
+	$array = $collection->toArray();
+	
+**Result:**
+	
+	$array = [1,2,3,4,5];
+	
+## toJson()
+
+Convert the collection to JSON format.
+
+**Method:**
+
+	public function toJson($options = 0);
+	
+**Example:**
+
+	$collection = collect([
+		['id' => 1, 'name' => 'John Doe'],
+		['id' => 2, 'name' => 'Jane Doe'],
+		['id' => 3, 'name' => 'Jack Doe']
+	]);
+	
+	$json = $collection->toJson();
+	
+**Result:**
+	
+	$json = '[{"id":1,"name":"John Doe"},{"id":2,"name":"Jane Doe"},{"id":3,"name":"Jack Doe"}]';
+	
+**Notes:**
+
+This method uses `json_encode()` and the $options parameter is a constant. Available parameters from [php documentation](http://php.net/manual/en/function.json-encode.php):
+
+- JSON_HEX_QUOT
+- JSON_HEX_TAG
+- JSON_HEX_AMP
+- JSON_HEX_APOS
+- JSON_NUMERIC_CHECK
+- JSON_PRETTY_PRINT
+- JSON_UNESCAPED_SLASHES
+- JSON_FORCE_OBJECT
+- JSON_PRESERVE_ZERO_FRACTION
+- JSON_UNESCAPED_UNICODE
+
 ## transform()
 
 Transform each item in the collection using a callback.
@@ -1921,7 +2052,7 @@ Transform each item in the collection using a callback.
 	
 **Result:**
 	
-	$collection->all() = [2,3,6,8,10];
+	$collection->all() = [2,4,6,8,10];
 	
 **Example 2:**
 
@@ -1977,7 +2108,7 @@ Return only unique items from the collection array.
 	
 **Notes:**
 
-This method returns a collection with the uniques items. If we need consecutive numbers as keys and not the old ones we have to use values() method.
+This method returns a collection with the uniques items. If we need consecutive numbers as keys and not the old ones we have to use `values()` method.
 
 ## values()
 
@@ -1987,7 +2118,7 @@ Reset the keys on the underlying array to consecutive integers.
 
 	public function values();
 	
-**Example 1:**
+**Example:**
 
 	$collection1 = collect([2 => 10, 'a' => 3, 1265 => 12]);
 	
@@ -1999,244 +2130,119 @@ Reset the keys on the underlying array to consecutive integers.
 	
 **Notes:**
 
-This method uses array_values() function to reset an array's keys to consecutive integers. It is one of the most important methods offered as it can be chained after most of the other methods take place to reset returned collections keys.
+This method uses `array_values()` function to reset an array's keys to consecutive integers. It is one of the most important methods offered as it can be chained after most of the other methods take place to reset returned collections keys.
 
-## toArray()
+## where()
 
-Get the collection of items as a plain array.
-
-**Method:**
-
-	public function toArray();
-	
-**Example:**
-
-	$collection = collect([1,2,3,4,5]);
-	
-	$array = $collection->toArray();
-	
-**Result:**
-	
-	$array = [1,2,3,4,5];
-	
-## jsonSerialize()
-
-Convert the object into something JSON serializable.
+Filter items by the given key value pair.
 
 **Method:**
 
-	public function jsonSerialize();
+	public function where($key, $value, $strict = true);
 	
-**Example:**
+**Example 1:**
 
-	$collection = collect([1,2,3,4,5]);
-	
-	$array = $collection->jsonSerialize();
-	
-**Result:**
-	
-	$array = [1,2,3,4,5];
-	
-## toJson()
-
-Convert the collection to JSON format.
-
-**Method:**
-
-	public function toJson($options = 0);
-	
-**Example:**
-
-	$collection = collect([
+	$collection1 = collect([
 		['id' => 1, 'name' => 'John Doe'],
-		['id' => 2, 'name' => 'Jane Doe'],
-		['id' => 3, 'name' => 'Jack Doe']
+		['id' => 2, 'name' => 'Jane Doe']
 	]);
-	
-	$json = $collection->toJson();
+
+	$collection2 = $collection1->where('id', 1);
 	
 **Result:**
 	
-	$json = '[{"id":1,"name":"John Doe"},{"id":2,"name":"Jane Doe"},{"id":3,"name":"Jack Doe"}]';
+	$collection2->all() = [
+		['id' => 1, 'name' => 'John Doe']
+	];
+	
+**Example 2:**
+
+	$collection1 = collect([
+		['id' => 1, 'name' => 'John Doe'],
+		['id' => 2, 'name' => 'Jane Doe']
+	]);
+
+	$collection2 = $collection1->where('id', '1', true);
+	
+**Result:**
+	
+	$collection2->all() = [];
+	
+**Example 3:**
+
+	$collection1 = collect([
+		['id' => 1, 'name' => 'John Doe'],
+		['id' => 2, 'name' => 'Jane Doe']
+	]);
+
+	$collection2 = $collection->where('id', '2', false);
+	
+**Result:**
+	
+	$collection2->all() = [
+		1 => ['id' => 2, 'name' => 'Jane Doe']
+	];
+	
+**Example 4:**
+
+	$collection1 = collect([
+		['id' => 1, 'name' => 'John Doe'],
+		['id' => 2, 'name' => 'Jane Doe']
+	]);
+
+	$collection2 = $collection->where('id', '2', false)->values();
+	
+**Result:**
+	
+	$collection2->all() = [
+		['id' => 2, 'name' => 'Jane Doe']
+	];
 	
 **Notes:**
 
-This method uses json_encode() and the $options parameter is a constant. Available parameters from [php documentation](http://php.net/manual/en/function.json-encode.php):
+Be careful, there is a third parameter named `$strict` which is equal to true so by default the method tries to find for identical values and not just equal. If this changes then the method tries to find equal values. Also if you don't want the values of your new collection to retian their keys form their previous collection remember to chain `values()` method at the end of `where()` as we did on our fourth example.
 
-- JSON_HEX_QUOT
-- JSON_HEX_TAG
-- JSON_HEX_AMP
-- JSON_HEX_APOS
-- JSON_NUMERIC_CHECK
-- JSON_PRETTY_PRINT
-- JSON_UNESCAPED_SLASHES
-- JSON_FORCE_OBJECT
-- JSON_PRESERVE_ZERO_FRACTION
-- JSON_UNESCAPED_UNICODE
+## whereLoose()
 
-## count()
-
-Count the number of items in the collection.
+Filter items by the given key value pair using loose comparison.
 
 **Method:**
 
-	public function count();
+	public function whereLoose($key, $value);
 	
 **Example 1:**
 
-	$collection = collect([1,2,3,4,5]);
-	
-	$count = $collection->count();
+	$collection1 = collect([
+		['id' => 1, 'name' => 'John Doe'],
+		['id' => 2, 'name' => 'Jane Doe']
+	]);
+
+	$collection2 = $collection1->whereLoose('id', 1);
 	
 **Result:**
-
-	$count = 5;
+	
+	$collection2->all() = [
+		['id' => 1, 'name' => 'John Doe']
+	];
 	
 **Example 2:**
 
-	$collection = collect([
+	$collection1 = collect([
 		['id' => 1, 'name' => 'John Doe'],
-		['id' => 2, 'name' => 'Jane Doe'],
-		['id' => 3, 'name' => 'Jack Doe']
+		['id' => 2, 'name' => 'Jane Doe']
 	]);
-	
-	$count = $collection->count();
+
+	$collection2 = $collection1->whereLoose('id', '1');
 	
 **Result:**
-
-	$count = 3;
 	
-## offsetExists()
-
-Determine if an item exists at an offset.
-
-**Method:**
-
-	public function offsetExists($key);
-	
-**Example 1:**
-
-	$collection = collect([1,2,3,4,5]);
-	
-	$collection->offsetExists(1);
-	
-**Result:**
-
-	true
-	
-**Example 2:**
-
-	$collection = collect([
-		['id' => 1, 'name' => 'John Doe'],
-		['id' => 2, 'name' => 'Jane Doe'],
-		['id' => 3, 'name' => 'Jack Doe']
-	]);
-	
-	$collection->offsetExists(5);
-	
-**Result:**
-
-	false
-	
-## offsetGet()
-
-Get an item at a given offset.
-
-**Method:**
-
-	public function offsetGet($key);
-	
-**Example 1:**
-
-	$collection = collect([1,2,3,4,5]);
-	
-	$item = $collection->offsetGet(0);
-	
-**Result:**
-
-	$item = 1;
-	
-**Example 2:**
-
-	$collection = collect([
-		['id' => 1, 'name' => 'John Doe'],
-		['id' => 2, 'name' => 'Jane Doe'],
-		['id' => 3, 'name' => 'Jack Doe']
-	]);
-	
-	$item = $collection->offsetGet(2);
-	
-**Result:**
-
-	$item = ['id' => 3, 'name' => 'Jack Doe'];
+	$collection2->all() = [
+		['id' => 1, 'name' => 'John Doe']
+	];
 	
 **Notes:**
 
-If we pass a non-existent key then an ErrorException is thrown.
-
-## offsetSet()
-
-Set the item at a given offset.
-
-**Method:**
-
-	public function offsetSet($key, $value);
-	
-**Example 1:**
-
-	$collection = collect([1,2,3,4,5]);
-	
-	$collection->offsetSet(2, 123);
-	
-**Result:**
-
-	$collection->all() = [1,2,123,4,5];
-	
-**Example 2:**
-
-	$collection = collect([1,2,3,4,5]);
-	
-	$collection->offsetSet(5, 123);
-	
-**Result:**
-
-	$collection->all() = [1,2,3,4,5,123];
-	
-**Notes:**
-
-This method updates the collection itself by replacing a value if the key exists or by adding a new key/value pair if the key doesn't exist.
-
-## offsetUnset()
-
-Unset the item at a given offset.
-
-**Method:**
-
-	public function offsetUnset($key);
-	
-**Example 1:**
-
-	$collection = collect([1,2,3,4,5]);
-	
-	$collection->offsetUnset(2);
-	
-**Result:**
-
-	$collection->all() = [1,2,4,5];
-	
-**Example 2:**
-
-	$collection = collect([1,2,3,4,5]);
-	
-	$collection->offsetUnset(22);
-	
-**Result:**
-
-	$collection->all() = [1,2,3,4,5];
-	
-**Notes:**
-
-This method updates the collection itself by unseting a key if this key exists. If it doesn't then nothing happens.
+It is exactly the same method as before but in this case it doesn't accept a third parameter and returns results by searching only for equal values.
 
 ## __toString()
 
